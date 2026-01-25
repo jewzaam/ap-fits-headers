@@ -64,6 +64,10 @@ addopts = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
+filterwarnings = [
+    # Suppress deprecation warnings from xisf library (third-party)
+    "ignore::DeprecationWarning:xisf",
+]
 
 [tool.black]
 line-length = 88

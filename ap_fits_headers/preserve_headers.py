@@ -102,8 +102,10 @@ def read_xisf_header(filepath: Path) -> Dict[str, Any]:
         # Use XISF.read() to get image data and metadata
         image_metadata = {}
         xisf_metadata = {}
-        XISF.read(str(filepath), image_metadata=image_metadata, xisf_metadata=xisf_metadata)
-        
+        XISF.read(
+            str(filepath), image_metadata=image_metadata, xisf_metadata=xisf_metadata
+        )
+
         # Extract FITSKeywords from image metadata
         header_dict = {}
         if "FITSKeywords" in image_metadata:
@@ -210,7 +212,9 @@ def update_xisf_header(filepath: Path, updates: Dict[str, str]) -> bool:
         # XISF files need to be read, modified, and written back
         image_metadata = {}
         xisf_metadata = {}
-        image_data = XISF.read(str(filepath), image_metadata=image_metadata, xisf_metadata=xisf_metadata)
+        image_data = XISF.read(
+            str(filepath), image_metadata=image_metadata, xisf_metadata=xisf_metadata
+        )
 
         # Get current header from FITSKeywords
         header_dict = {}

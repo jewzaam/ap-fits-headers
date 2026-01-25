@@ -10,7 +10,6 @@ from pathlib import Path
 
 import pytest
 
-
 # Path to fixtures directory containing real test files
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -26,15 +25,17 @@ def temp_dir():
 def sample_fits_file(temp_dir):
     """
     Provide a real FITS file for testing.
-    
+
     Copies the real FITS file from tests/fixtures/ to a temporary directory
     to ensure the source file remains immutable.
     """
     source_file = FIXTURES_DIR / "sample.fits"
     if not source_file.exists():
-        pytest.skip(f"Real FITS fixture file not found: {source_file}. "
-                   f"Please add a real FITS file to {FIXTURES_DIR} and track it with git LFS.")
-    
+        pytest.skip(
+            f"Real FITS fixture file not found: {source_file}. "
+            f"Please add a real FITS file to {FIXTURES_DIR} and track it with git LFS."
+        )
+
     # Copy to temp directory to keep source immutable
     fits_path = temp_dir / "test.fits"
     shutil.copy2(source_file, fits_path)
@@ -45,15 +46,17 @@ def sample_fits_file(temp_dir):
 def sample_xisf_file(temp_dir):
     """
     Provide a real XISF file for testing.
-    
+
     Copies the real XISF file from tests/fixtures/ to a temporary directory
     to ensure the source file remains immutable.
     """
     source_file = FIXTURES_DIR / "sample.xisf"
     if not source_file.exists():
-        pytest.skip(f"Real XISF fixture file not found: {source_file}. "
-                   f"Please add a real XISF file to {FIXTURES_DIR} and track it with git LFS.")
-    
+        pytest.skip(
+            f"Real XISF fixture file not found: {source_file}. "
+            f"Please add a real XISF file to {FIXTURES_DIR} and track it with git LFS."
+        )
+
     # Copy to temp directory to keep source immutable
     xisf_path = temp_dir / "test.xisf"
     shutil.copy2(source_file, xisf_path)

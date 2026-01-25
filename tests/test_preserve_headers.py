@@ -10,7 +10,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from astropy.io import fits
-import numpy as np
 
 from ap_fits_headers import preserve_headers
 
@@ -123,17 +122,22 @@ class TestGetHeaderValue:
     def test_get_from_xisf_header(self, sample_xisf_file):
         """Test getting value from XISF header."""
         from xisf import XISF
-        import numpy as np
 
         # Read the file to get image data and metadata
         image_metadata = {}
         xisf_metadata = {}
-        image_data = XISF.read(str(sample_xisf_file), image_metadata=image_metadata, xisf_metadata=xisf_metadata)
+        image_data = XISF.read(
+            str(sample_xisf_file),
+            image_metadata=image_metadata,
+            xisf_metadata=xisf_metadata,
+        )
 
         # Add header value to metadata
         if "FITSKeywords" not in image_metadata:
             image_metadata["FITSKeywords"] = {}
-        image_metadata["FITSKeywords"]["TESTKEY"] = [{"value": "testvalue", "comment": ""}]
+        image_metadata["FITSKeywords"]["TESTKEY"] = [
+            {"value": "testvalue", "comment": ""}
+        ]
 
         # Write back with updated metadata
         XISF.write(str(sample_xisf_file), image_data, image_metadata=image_metadata)
@@ -171,16 +175,17 @@ class TestSetHeaderValue:
 class TestPreserveHeaders:
     """Tests for preserve_headers function."""
 
-    def test_preserve_headers_fits_file(self, temp_dir):
+    def test_preserve_headers_fits_file(self, temp_dir, sample_fits_file):
         """Test preserving headers in FITS file."""
+        import shutil
+
         # Create directory structure with key-value pairs
         test_dir = temp_dir / "CAMERA_TestCam" / "OPTIC_C8E"
         test_dir.mkdir(parents=True)
 
-        # Create FITS file
+        # Copy real FITS file to test directory (keeps source immutable)
         fits_path = test_dir / "test.fits"
-        hdu = fits.PrimaryHDU(data=np.zeros((10, 10)))
-        hdu.writeto(str(fits_path), overwrite=True)
+        shutil.copy2(sample_fits_file, fits_path)
 
         # Run preserve_headers
         preserve_headers.preserve_headers(
@@ -195,17 +200,20 @@ class TestPreserveHeaders:
             assert "OPTIC" in header
             assert header["OPTIC"] == "C8E"
 
-    def test_preserve_headers_skips_existing_values(self, temp_dir):
+    def test_preserve_headers_skips_existing_values(self, temp_dir, sample_fits_file):
         """Test that existing header values are not overwritten if they match."""
+        import shutil
+
         # Create directory structure
         test_dir = temp_dir / "CAMERA_TestCam"
         test_dir.mkdir(parents=True)
 
-        # Create FITS file with existing header
+        # Copy real FITS file and set existing header value
         fits_path = test_dir / "test.fits"
-        hdu = fits.PrimaryHDU(data=np.zeros((10, 10)))
-        hdu.header["CAMERA"] = "TestCam"
-        hdu.writeto(str(fits_path), overwrite=True)
+        shutil.copy2(sample_fits_file, fits_path)
+        with fits.open(str(fits_path), mode="update") as hdul:
+            hdul[0].header["CAMERA"] = "TestCam"
+            hdul.flush()
 
         # Run preserve_headers
         preserve_headers.preserve_headers(
@@ -217,17 +225,22 @@ class TestPreserveHeaders:
             header = hdul[0].header
             assert header["CAMERA"] == "TestCam"
 
-    def test_preserve_headers_updates_different_values(self, temp_dir):
+    def test_preserve_headers_updates_different_values(
+        self, temp_dir, sample_fits_file
+    ):
         """Test that header values are updated if they differ from path."""
+        import shutil
+
         # Create directory structure
         test_dir = temp_dir / "CAMERA_NewCam"
         test_dir.mkdir(parents=True)
 
-        # Create FITS file with different header value
+        # Copy real FITS file and set different header value
         fits_path = test_dir / "test.fits"
-        hdu = fits.PrimaryHDU(data=np.zeros((10, 10)))
-        hdu.header["CAMERA"] = "OldCam"
-        hdu.writeto(str(fits_path), overwrite=True)
+        shutil.copy2(sample_fits_file, fits_path)
+        with fits.open(str(fits_path), mode="update") as hdul:
+            hdul[0].header["CAMERA"] = "OldCam"
+            hdul.flush()
 
         # Run preserve_headers
         preserve_headers.preserve_headers(
@@ -239,16 +252,17 @@ class TestPreserveHeaders:
             header = hdul[0].header
             assert header["CAMERA"] == "NewCam"
 
-    def test_preserve_headers_dryrun(self, temp_dir):
+    def test_preserve_headers_dryrun(self, temp_dir, sample_fits_file):
         """Test preserve_headers with dryrun flag."""
+        import shutil
+
         # Create directory structure
         test_dir = temp_dir / "CAMERA_TestCam"
         test_dir.mkdir(parents=True)
 
-        # Create FITS file
+        # Copy real FITS file to test directory (keeps source immutable)
         fits_path = test_dir / "test.fits"
-        hdu = fits.PrimaryHDU(data=np.zeros((10, 10)))
-        hdu.writeto(str(fits_path), overwrite=True)
+        shutil.copy2(sample_fits_file, fits_path)
 
         # Run preserve_headers with dryrun
         preserve_headers.preserve_headers(
@@ -260,16 +274,17 @@ class TestPreserveHeaders:
             header = hdul[0].header
             assert "CAMERA" not in header
 
-    def test_preserve_headers_with_preserve_list(self, temp_dir):
+    def test_preserve_headers_with_preserve_list(self, temp_dir, sample_fits_file):
         """Test preserve_headers with specific preserve list."""
+        import shutil
+
         # Create directory structure
         test_dir = temp_dir / "CAMERA_TestCam" / "OPTIC_C8E" / "OTHER_OtherValue"
         test_dir.mkdir(parents=True)
 
-        # Create FITS file
+        # Copy real FITS file to test directory (keeps source immutable)
         fits_path = test_dir / "test.fits"
-        hdu = fits.PrimaryHDU(data=np.zeros((10, 10)))
-        hdu.writeto(str(fits_path), overwrite=True)
+        shutil.copy2(sample_fits_file, fits_path)
 
         # Run preserve_headers with include list
         preserve_headers.preserve_headers(
@@ -286,18 +301,18 @@ class TestPreserveHeaders:
             assert "OPTIC" not in header
             assert "OTHER" not in header
 
-    def test_preserve_headers_xisf_file(self, temp_dir):
+    def test_preserve_headers_xisf_file(self, temp_dir, sample_xisf_file):
         """Test preserving headers in XISF file."""
         from xisf import XISF
+        import shutil
 
         # Create directory structure
         test_dir = temp_dir / "CAMERA_TestCam"
         test_dir.mkdir(parents=True)
 
-        # Create XISF file
+        # Copy real XISF file to test directory (keeps source immutable)
         xisf_path = test_dir / "test.xisf"
-        image_data = np.zeros((10, 10), dtype=np.float32)
-        XISF.write(str(xisf_path), image_data, image_metadata={"FITSKeywords": {}})
+        shutil.copy2(sample_xisf_file, xisf_path)
 
         # Run preserve_headers
         preserve_headers.preserve_headers(
