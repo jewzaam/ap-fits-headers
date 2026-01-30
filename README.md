@@ -6,6 +6,14 @@ A simple tool for preserving FITS headers from file path key-value pairs into .f
 
 This tool extracts key-value pairs encoded in directory paths and filenames and inserts them as FITS header keywords. It only updates headers when the current value doesn't match the path value, ensuring idempotent operation.
 
+## Documentation
+
+This tool is part of the astrophotography pipeline. For comprehensive documentation including workflow guides and integration with other tools, see:
+
+- **[Pipeline Overview](https://github.com/jewzaam/ap-base/blob/main/docs/index.md)** - Full pipeline documentation
+- **[Workflow Guide](https://github.com/jewzaam/ap-base/blob/main/docs/workflow.md)** - Detailed workflow with diagrams
+- **[ap-common Reference](https://github.com/jewzaam/ap-base/blob/main/docs/tools/ap-common.md)** - API reference for this tool
+
 ## Usage
 
 ```powershell
