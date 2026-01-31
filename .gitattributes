@@ -1,4 +1,0 @@
-# Git LFS configuration for test fixture files
-# These are real FITS and XISF files from actual data gathering
-tests/fixtures/*.fits filter=lfs diff=lfs merge=lfs -text
-tests/fixtures/*.xisf filter=lfs diff=lfs merge=lfs -text
