@@ -21,6 +21,10 @@ from . import config
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Pre-compiled regex patterns for file matching (compiled once at module load)
+_FITS_PATTERN = re.compile(config.INPUT_PATTERN_FITS)
+_XISF_PATTERN = re.compile(config.INPUT_PATTERN_XISF)
+
 
 def extract_key_value_pairs(path: Path) -> Dict[str, str]:
     """
@@ -89,6 +93,32 @@ def read_fits_header(filepath: Path) -> fits.Header:
         raise
 
 
+def _extract_fits_keywords(image_metadata: Dict[str, Any]) -> Dict[str, str]:
+    """
+    Extract FITSKeywords from XISF image metadata into a flat dictionary.
+
+    Args:
+        image_metadata: XISF image metadata dictionary
+
+    Returns:
+        Dictionary mapping uppercase header keys to string values
+    """
+    header_dict: Dict[str, str] = {}
+    if config.FITS_KEYWORDS_KEY in image_metadata:
+        fits_keywords = image_metadata[config.FITS_KEYWORDS_KEY]
+        if isinstance(fits_keywords, dict):
+            for key, value_list in fits_keywords.items():
+                if isinstance(value_list, list) and len(value_list) > 0:
+                    current_val = value_list[0].get("value", "")
+                    if isinstance(current_val, (int, float)):
+                        header_dict[key.upper()] = str(current_val)
+                    else:
+                        header_dict[key.upper()] = str(current_val).strip()
+                else:
+                    header_dict[key.upper()] = str(value_list) if value_list else ""
+    return header_dict
+
+
 def read_xisf_header(filepath: Path) -> Dict[str, Any]:
     """
     Read header from a .xisf file.
@@ -111,24 +141,14 @@ def read_xisf_header(filepath: Path) -> Dict[str, Any]:
         )
 
         # Extract FITSKeywords from image metadata
-        header_dict = {}
-        if "FITSKeywords" in image_metadata:
-            fits_keywords = image_metadata["FITSKeywords"]
-            if isinstance(fits_keywords, dict):
-                for key, value_list in fits_keywords.items():
-                    if isinstance(value_list, list) and len(value_list) > 0:
-                        # FITSKeywords values are lists of dicts with 'value' and 'comment'
-                        header_dict[key.upper()] = str(value_list[0].get("value", ""))
-                    else:
-                        header_dict[key.upper()] = str(value_list) if value_list else ""
-        return header_dict
+        return _extract_fits_keywords(image_metadata)
     except Exception as e:
         # Log error internally for consistency with read_fits_header
         logger.warning(f"Error reading XISF header from {filepath}: {e}")
         raise
 
 
-def get_header_value(header: fits.Header | Dict[str, any], key: str) -> str | None:
+def get_header_value(header: fits.Header | Dict[str, Any], key: str) -> str | None:
     """
     Get a header value from either a FITS header or XISF header dict.
 
@@ -159,7 +179,7 @@ def get_header_value(header: fits.Header | Dict[str, any], key: str) -> str | No
 
 
 def set_header_value(
-    header: fits.Header | Dict[str, any], key: str, value: str, comment: str = ""
+    header: fits.Header | Dict[str, Any], key: str, value: str, comment: str = ""
 ) -> None:
     """
     Set a header value in either a FITS header or XISF header dict.
@@ -221,23 +241,11 @@ def update_xisf_header(filepath: Path, updates: Dict[str, str]) -> bool:
         )
 
         # Get current header from FITSKeywords
-        header_dict = {}
-        if "FITSKeywords" in image_metadata:
-            fits_keywords = image_metadata["FITSKeywords"]
-            if isinstance(fits_keywords, dict):
-                for key, value_list in fits_keywords.items():
-                    if isinstance(value_list, list) and len(value_list) > 0:
-                        current_val = value_list[0].get("value", "")
-                        if isinstance(current_val, (int, float)):
-                            header_dict[key.upper()] = str(current_val)
-                        else:
-                            header_dict[key.upper()] = str(current_val).strip()
-                    else:
-                        header_dict[key.upper()] = str(value_list) if value_list else ""
+        header_dict = _extract_fits_keywords(image_metadata)
 
         modified = False
-        if "FITSKeywords" not in image_metadata:
-            image_metadata["FITSKeywords"] = {}
+        if config.FITS_KEYWORDS_KEY not in image_metadata:
+            image_metadata[config.FITS_KEYWORDS_KEY] = {}
 
         for key, value in updates.items():
             key_upper = key.upper()
@@ -245,7 +253,9 @@ def update_xisf_header(filepath: Path, updates: Dict[str, str]) -> bool:
 
             if current_value != value:
                 # Update FITSKeywords - values are lists of dicts with 'value' and 'comment'
-                image_metadata["FITSKeywords"][key] = [{"value": value, "comment": ""}]
+                image_metadata[config.FITS_KEYWORDS_KEY][key] = [
+                    {"value": value, "comment": ""}
+                ]
                 modified = True
                 logger.debug(f"  Updated {key} = {value}")
 
@@ -301,18 +311,15 @@ def preserve_headers(
     if not root_path.is_dir():
         raise ValueError(f"Path is not a directory: {root_dir}")
 
-    # Find all FITS and XISF files using patterns from config
-    fits_pattern = re.compile(config.INPUT_PATTERN_FITS)
-    xisf_pattern = re.compile(config.INPUT_PATTERN_XISF)
-
+    # Find all FITS and XISF files using pre-compiled patterns
     fits_files = []
     xisf_files = []
     for filepath in root_path.rglob("*"):
         if filepath.is_file():
             filename = str(filepath)
-            if fits_pattern.match(filename):
+            if _FITS_PATTERN.match(filename):
                 fits_files.append(filepath)
-            elif xisf_pattern.match(filename):
+            elif _XISF_PATTERN.match(filename):
                 xisf_files.append(filepath)
 
     all_files = fits_files + xisf_files
@@ -350,7 +357,7 @@ def preserve_headers(
 
         # Check current header values - only update if different
         final_updates = {}
-        is_fits = fits_pattern.match(str(filepath)) is not None
+        is_fits = _FITS_PATTERN.match(str(filepath)) is not None
 
         try:
             if is_fits:

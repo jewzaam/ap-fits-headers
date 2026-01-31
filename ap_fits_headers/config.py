@@ -8,3 +8,6 @@ These are specific to this tool and not shared across projects.
 # File pattern constants
 INPUT_PATTERN_FITS = r".*\.(fits|fit|FITS|FIT)$"
 INPUT_PATTERN_XISF = r".*\.(xisf|XISF)$"
+
+# XISF metadata key constants
+FITS_KEYWORDS_KEY = "FITSKeywords"
