@@ -104,8 +104,8 @@ def read_xisf_header(filepath: Path) -> Dict[str, Any]:
     """
     try:
         # Use XISF.read() to get image data and metadata
-        image_metadata = {}
-        xisf_metadata = {}
+        image_metadata: dict[str, Any] = {}
+        xisf_metadata: dict[str, Any] = {}
         XISF.read(
             str(filepath), image_metadata=image_metadata, xisf_metadata=xisf_metadata
         )
@@ -128,7 +128,7 @@ def read_xisf_header(filepath: Path) -> Dict[str, Any]:
         raise
 
 
-def get_header_value(header: fits.Header | Dict[str, any], key: str) -> str | None:
+def get_header_value(header: fits.Header | Dict[str, Any], key: str) -> str | None:
     """
     Get a header value from either a FITS header or XISF header dict.
 
@@ -159,7 +159,7 @@ def get_header_value(header: fits.Header | Dict[str, any], key: str) -> str | No
 
 
 def set_header_value(
-    header: fits.Header | Dict[str, any], key: str, value: str, comment: str = ""
+    header: fits.Header | Dict[str, Any], key: str, value: str, comment: str = ""
 ) -> None:
     """
     Set a header value in either a FITS header or XISF header dict.
@@ -214,8 +214,8 @@ def update_xisf_header(filepath: Path, updates: Dict[str, str]) -> bool:
     """
     try:
         # XISF files need to be read, modified, and written back
-        image_metadata = {}
-        xisf_metadata = {}
+        image_metadata: dict[str, Any] = {}
+        xisf_metadata: dict[str, Any] = {}
         image_data = XISF.read(
             str(filepath), image_metadata=image_metadata, xisf_metadata=xisf_metadata
         )
