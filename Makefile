@@ -34,7 +34,7 @@ format: install-dev
 
 # Lint code with flake8 (disable multiprocessing to avoid sandbox issues, match black line length)
 lint: install-dev
-	$(PYTHON) -m flake8 --jobs=1 --max-line-length=88 --extend-ignore=E203,E266,E501,W503,F401,W605,E722 ap_fits_headers tests
+	$(PYTHON) -m flake8 --jobs=1 --max-line-length=88 --extend-ignore=E203,E266,E501,W503,W605,E722 ap_fits_headers tests
 
 # Testing (install deps first, then run tests)
 test: install-dev

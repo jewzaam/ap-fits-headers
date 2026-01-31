@@ -14,6 +14,17 @@ import pytest
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
+def _is_lfs_pointer(filepath: Path) -> bool:
+    """Check if a file is a Git LFS pointer instead of actual content."""
+    try:
+        with open(filepath, "rb") as f:
+            header = f.read(100)
+            # LFS pointers start with "version https://git-lfs"
+            return header.startswith(b"version https://git-lfs")
+    except Exception:
+        return False
+
+
 @pytest.fixture
 def temp_dir():
     """Create a temporary directory for tests."""
@@ -36,6 +47,11 @@ def sample_fits_file(temp_dir):
             f"Please add a real FITS file to {FIXTURES_DIR} and track it with git LFS."
         )
 
+    if _is_lfs_pointer(source_file):
+        pytest.skip(
+            "FITS fixture is a Git LFS pointer. Run 'git lfs pull' to fetch actual files."
+        )
+
     # Copy to temp directory to keep source immutable
     fits_path = temp_dir / "test.fits"
     shutil.copy2(source_file, fits_path)
@@ -55,6 +71,11 @@ def sample_xisf_file(temp_dir):
         pytest.skip(
             f"Real XISF fixture file not found: {source_file}. "
             f"Please add a real XISF file to {FIXTURES_DIR} and track it with git LFS."
+        )
+
+    if _is_lfs_pointer(source_file):
+        pytest.skip(
+            "XISF fixture is a Git LFS pointer. Run 'git lfs pull' to fetch actual files."
         )
 
     # Copy to temp directory to keep source immutable
