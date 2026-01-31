@@ -1,5 +1,13 @@
 # ap-fits-headers
 
+[![Test](https://github.com/jewzaam/ap-preserve-header/actions/workflows/test.yml/badge.svg)](https://github.com/jewzaam/ap-preserve-header/actions/workflows/test.yml)
+[![Coverage](https://github.com/jewzaam/ap-preserve-header/actions/workflows/coverage.yml/badge.svg)](https://github.com/jewzaam/ap-preserve-header/actions/workflows/coverage.yml)
+[![Lint](https://github.com/jewzaam/ap-preserve-header/actions/workflows/lint.yml/badge.svg)](https://github.com/jewzaam/ap-preserve-header/actions/workflows/lint.yml)
+[![Format](https://github.com/jewzaam/ap-preserve-header/actions/workflows/format.yml/badge.svg)](https://github.com/jewzaam/ap-preserve-header/actions/workflows/format.yml)
+[![Typecheck](https://github.com/jewzaam/ap-preserve-header/actions/workflows/typecheck.yml/badge.svg)](https://github.com/jewzaam/ap-preserve-header/actions/workflows/typecheck.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A simple tool for preserving FITS headers from file path key-value pairs into .fits and .xisf files.
 
 ## Overview
