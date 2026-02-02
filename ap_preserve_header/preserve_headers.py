@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from astropy.io import fits
-from ap_common.fits import get_file_headers
+from ap_common.fits import get_file_headers, update_xisf_headers
 from xisf import XISF
 
 from . import config
@@ -201,69 +201,6 @@ def update_fits_header(filepath: Path, updates: Dict[str, str]) -> bool:
     return modified
 
 
-def update_xisf_header(filepath: Path, updates: Dict[str, str]) -> bool:
-    """
-    Update XISF header with new keywords.
-
-    Args:
-        filepath: Path to the XISF file
-        updates: Dictionary of header keywords and values to update
-
-    Returns:
-        True if file was modified, False otherwise
-    """
-    try:
-        # XISF files need to be read, modified, and written back
-        image_metadata: dict[str, Any] = {}
-        xisf_metadata: dict[str, Any] = {}
-        image_data = XISF.read(
-            str(filepath), image_metadata=image_metadata, xisf_metadata=xisf_metadata
-        )
-
-        # Get current header from FITSKeywords
-        header_dict = {}
-        if "FITSKeywords" in image_metadata:
-            fits_keywords = image_metadata["FITSKeywords"]
-            if isinstance(fits_keywords, dict):
-                for key, value_list in fits_keywords.items():
-                    if isinstance(value_list, list) and len(value_list) > 0:
-                        current_val = value_list[0].get("value", "")
-                        if isinstance(current_val, (int, float)):
-                            header_dict[key.upper()] = str(current_val)
-                        else:
-                            header_dict[key.upper()] = str(current_val).strip()
-                    else:
-                        header_dict[key.upper()] = str(value_list) if value_list else ""
-
-        modified = False
-        if "FITSKeywords" not in image_metadata:
-            image_metadata["FITSKeywords"] = {}
-
-        for key, value in updates.items():
-            key_upper = key.upper()
-            current_value = header_dict.get(key_upper)
-
-            if current_value != value:
-                # Update FITSKeywords - values are lists of dicts with 'value' and 'comment'
-                image_metadata["FITSKeywords"][key] = [{"value": value, "comment": ""}]
-                modified = True
-                logger.debug(f"  Updated {key} = {value}")
-
-        if modified:
-            XISF.write(
-                str(filepath),
-                image_data,
-                image_metadata=image_metadata,
-                xisf_metadata=xisf_metadata,
-            )
-            logger.debug(f"  Wrote updated XISF file: {filepath}")
-
-        return modified
-    except Exception as e:
-        logger.warning(f"  Error updating XISF file {filepath}: {e}")
-        return False
-
-
 def should_include_header(key: str, include_headers: List[str]) -> bool:
     """
     Determine if a header key should be included.
@@ -387,7 +324,9 @@ def preserve_headers(
                 if is_fits:
                     modified = update_fits_header(filepath, final_updates)
                 else:
-                    modified = update_xisf_header(filepath, final_updates)
+                    modified = update_xisf_headers(
+                        str(filepath), final_updates, comments=None, check_existing=True
+                    )
 
                 if modified:
                     files_updated += 1
