@@ -15,6 +15,7 @@ from typing import Any, Dict, List
 from astropy.io import fits
 from ap_common.fits import get_file_headers, update_xisf_headers
 from ap_common.logging_config import setup_logging
+from ap_common.progress import progress_iter
 from xisf import XISF
 
 from . import config
@@ -222,6 +223,7 @@ def preserve_headers(
     root_dir: str,
     include_headers: List[str],
     dryrun: bool = False,
+    quiet: bool = False,
 ) -> None:
     """
     Preserve FITS headers from file path key-value pairs into .fits and .xisf files.
@@ -230,6 +232,7 @@ def preserve_headers(
         root_dir: Root directory to scan for FITS and XISF files
         include_headers: List of specific header keys to include (required, explicit inclusion only)
         dryrun: Perform dry run without actually modifying files
+        quiet: Suppress progress indicators
     """
     root_path = Path(root_dir).resolve()
 
@@ -263,7 +266,9 @@ def preserve_headers(
     files_no_updates = 0
     files_failed = 0
 
-    for filepath in all_files:
+    for filepath in progress_iter(
+        all_files, desc="Processing files", unit="files", enabled=not quiet
+    ):
         files_processed += 1
         logger.debug(f"\nProcessing: {filepath}")
 
@@ -391,6 +396,7 @@ def main() -> None:
         root_dir=args.root_dir,
         include_headers=args.include,
         dryrun=args.dryrun,
+        quiet=args.quiet,
     )
 
 

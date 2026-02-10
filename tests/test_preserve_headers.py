@@ -211,7 +211,10 @@ class TestPreserveHeaders:
 
         # Run preserve_headers
         preserve_headers.preserve_headers(
-            root_dir=str(temp_dir), include_headers=["CAMERA", "OPTIC"], dryrun=False
+            root_dir=str(temp_dir),
+            include_headers=["CAMERA", "OPTIC"],
+            dryrun=False,
+            quiet=True,
         )
 
         # Verify headers were added
@@ -239,7 +242,10 @@ class TestPreserveHeaders:
 
         # Run preserve_headers
         preserve_headers.preserve_headers(
-            root_dir=str(temp_dir), include_headers=["CAMERA", "OPTIC"], dryrun=False
+            root_dir=str(temp_dir),
+            include_headers=["CAMERA", "OPTIC"],
+            dryrun=False,
+            quiet=True,
         )
 
         # Verify header still has the same value
@@ -266,7 +272,10 @@ class TestPreserveHeaders:
 
         # Run preserve_headers
         preserve_headers.preserve_headers(
-            root_dir=str(temp_dir), include_headers=["CAMERA", "OPTIC"], dryrun=False
+            root_dir=str(temp_dir),
+            include_headers=["CAMERA", "OPTIC"],
+            dryrun=False,
+            quiet=True,
         )
 
         # Verify header was updated
@@ -288,7 +297,7 @@ class TestPreserveHeaders:
 
         # Run preserve_headers with dryrun
         preserve_headers.preserve_headers(
-            root_dir=str(temp_dir), include_headers=["CAMERA"], dryrun=True
+            root_dir=str(temp_dir), include_headers=["CAMERA"], dryrun=True, quiet=True
         )
 
         # Verify headers were NOT added (dryrun)
@@ -313,6 +322,7 @@ class TestPreserveHeaders:
             root_dir=str(temp_dir),
             include_headers=["CAMERA"],
             dryrun=False,
+            quiet=True,
         )
 
         # Verify only CAMERA was added, not OPTIC or OTHER
@@ -338,7 +348,7 @@ class TestPreserveHeaders:
 
         # Run preserve_headers
         preserve_headers.preserve_headers(
-            root_dir=str(temp_dir), include_headers=["CAMERA"], dryrun=False
+            root_dir=str(temp_dir), include_headers=["CAMERA"], dryrun=False, quiet=True
         )
 
         # Verify headers were added by reading metadata
@@ -354,7 +364,7 @@ class TestPreserveHeaders:
         """Test preserve_headers with invalid directory."""
         with pytest.raises(ValueError, match="does not exist"):
             preserve_headers.preserve_headers(
-                root_dir="/nonexistent/path", include_headers=["CAMERA"]
+                root_dir="/nonexistent/path", include_headers=["CAMERA"], quiet=True
             )
 
     def test_preserve_headers_not_directory(self, temp_dir):
@@ -364,7 +374,7 @@ class TestPreserveHeaders:
 
         with pytest.raises(ValueError, match="not a directory"):
             preserve_headers.preserve_headers(
-                root_dir=str(file_path), include_headers=["CAMERA"]
+                root_dir=str(file_path), include_headers=["CAMERA"], quiet=True
             )
 
 
@@ -381,6 +391,7 @@ class TestMain:
             root_dir="/root",
             include_headers=["CAMERA"],
             dryrun=False,
+            quiet=False,
         )
 
     @patch("ap_preserve_header.preserve_headers.preserve_headers")
@@ -396,6 +407,7 @@ class TestMain:
             root_dir="/root",
             include_headers=["CAMERA"],
             dryrun=False,
+            quiet=False,
         )
 
     @patch("ap_preserve_header.preserve_headers.preserve_headers")
@@ -411,6 +423,7 @@ class TestMain:
             root_dir="/root",
             include_headers=["CAMERA"],
             dryrun=True,
+            quiet=False,
         )
 
     @patch("ap_preserve_header.preserve_headers.preserve_headers")
@@ -426,6 +439,7 @@ class TestMain:
             root_dir="/root",
             include_headers=["CAMERA", "OPTIC"],
             dryrun=False,
+            quiet=False,
         )
 
     @patch("ap_preserve_header.preserve_headers.preserve_headers")
@@ -448,6 +462,7 @@ class TestMain:
             root_dir="/root",
             include_headers=["CAMERA"],
             dryrun=True,
+            quiet=False,
         )
 
     @patch("ap_preserve_header.preserve_headers.preserve_headers")
@@ -470,6 +485,7 @@ class TestMain:
             root_dir="/root",
             include_headers=["CAMERA"],
             dryrun=False,
+            quiet=True,
         )
         mock_setup_logging.assert_called_once_with(
             name="ap_preserve_header.preserve_headers", debug=False, quiet=True
@@ -495,6 +511,7 @@ class TestMain:
             root_dir="/root",
             include_headers=["CAMERA"],
             dryrun=False,
+            quiet=True,
         )
         mock_setup_logging.assert_called_once_with(
             name="ap_preserve_header.preserve_headers", debug=False, quiet=True
@@ -529,6 +546,7 @@ class TestMain:
             root_dir="/root",
             include_headers=["CAMERA"],
             dryrun=False,
+            quiet=True,
         )
         # --debug takes precedence over --quiet in the new implementation
         # Both flags are passed to setup_logging, which will use DEBUG level
