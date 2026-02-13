@@ -15,13 +15,16 @@ from typing import Any, Dict, List
 from astropy.io import fits
 from ap_common.fits import get_file_headers, update_xisf_headers
 from ap_common.logging_config import setup_logging
-from ap_common.progress import progress_iter
+from ap_common.progress import progress_iter, ProgressTracker
 from xisf import XISF
 
 from . import config
 
 # Module-level logger, configured in main()
 logger = logging.getLogger(__name__)
+
+# Set default description width for aligned progress bars
+ProgressTracker.set_default_desc_width(20)
 
 
 def extract_key_value_pairs(path: Path) -> Dict[str, str]:
