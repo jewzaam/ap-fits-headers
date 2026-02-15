@@ -20,7 +20,7 @@ This tool is part of the astrophotography pipeline. For comprehensive documentat
 ## Usage
 
 ```powershell
-python -m ap_preserve_header.preserve_headers <root_dir> --include KEY ... [--debug] [--dryrun] [--quiet] [--help]
+python -m ap_preserve_header <root_dir> --include KEY ... [--debug] [--dryrun] [--quiet] [--help]
 ```
 
 Options:
@@ -58,7 +58,7 @@ D:\Astrophotography\Data\CAMERA_ASI294MC\OPTIC_C8E\TARGET_M42\image.fits
 
 Running:
 ```powershell
-python -m ap_preserve_header.preserve_headers D:\Astrophotography\Data --include CAMERA OPTIC
+python -m ap_preserve_header D:\Astrophotography\Data --include CAMERA OPTIC
 ```
 
 Will extract `CAMERA=ASI294MC` and `OPTIC=C8E` from the path and write them as FITS header keywords in the file. The `TARGET` key-value pair is ignored since it's not in the `--include` list.
@@ -69,7 +69,7 @@ Will extract `CAMERA=ASI294MC` and `OPTIC=C8E` from the path and write them as F
 
 ```powershell
 # Preserve camera, filter, and exposure metadata
-python -m ap_preserve_header.preserve_headers D:\Astrophotography\10_Blink --include CAMERA FILTER EXPOSURE
+python -m ap_preserve_header D:\Astrophotography\10_Blink --include CAMERA FILTER EXPOSURE
 ```
 
 For a file at:
@@ -86,7 +86,7 @@ This will write:
 
 ```powershell
 # Preview changes without modifying files
-python -m ap_preserve_header.preserve_headers D:\Astrophotography --include CAMERA OPTIC TARGET --dryrun
+python -m ap_preserve_header D:\Astrophotography --include CAMERA OPTIC TARGET --dryrun
 ```
 
 Shows which files would be updated and what header changes would be made, without actually writing to files.
